@@ -1,0 +1,35 @@
+# .gitignore
+
+# Python virtual environment
+venv/
+
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# SQLAlchemy migration folder
+migrations/
+
+# Development specific files
+instance/
+*.sqlite
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Environment specific files
+*.swp
+*~
+
+# Dependency directories
+lib/
+include/
+bin/
+
