@@ -2,14 +2,14 @@ from flask import Flask
 
 import os
 
-parent_dir = os.path.dirname(os.getcwd())
+from . import settings 
 
 def create_app(test_config=None):
-
+    
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY = "dev",
-        DATABASE = os.path.join(parent_dir, 'attendance.sqlite')
+        DATABASE = settings.DATABASE
     )
 
     # Get configurations
@@ -27,10 +27,13 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return "Hello, World!"
-    from attendance import db
     
+    from . import register
+    from . import db
+   
     db.init_app(app)
-
+    app.register_blueprint(register.bp)
 
     return app
+
 

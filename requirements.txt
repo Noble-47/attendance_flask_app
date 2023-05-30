@@ -8,6 +8,7 @@ markdown-it-py==2.2.0
 MarkupSafe==2.1.2
 mdurl==0.1.2
 Pygments==2.15.1
+python-dotenv==1.0.0
 rich==13.3.5
 SQLAlchemy==2.0.15
 typing_extensions==4.6.2

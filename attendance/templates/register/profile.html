@@ -1,0 +1,26 @@
+{%extends 'base.html' %}
+{% block content %}
+<div class="profile">
+    <h2>Student Profile</h2>
+    <div class="form-group">
+        <label for="reg_num">Registration Number</label>
+        <input type="text" id="reg_num" name="reg_num" value="{{ g.student.reg_num }}" readonly>
+    </div>
+    <div class="form-group">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" value="{{ g.student.lastname }} {{ g.student.firstname}}" readonly>
+    </div>
+    <div class="form-group">
+        <label for="department">Department</label>
+        <input type="text" id="department" name="department" value="{{ g.student.department }}" readonly>
+    </div>
+    <div class="form-group">
+        <label for="level">level</label>
+        <input type="int" id="level" name="level" value="{{ g.student.level }}" readonly>
+    </div>
+    <div class="form-group">
+    	<p>Click on the button to register for today's class</p>
+        <button type="submit"><a href="{{ url_for('register.mark_attendance')}}">Mark attendance</a></button>
+	</div>
+</div>
+{% endblock %}

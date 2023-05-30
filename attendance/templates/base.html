@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+	<title>Hands On Python Class</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static' , filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
+    <script src="{{ url_for('static', filename = 'js/modernizr-3.5.0.min.js') }}"></script>
+</head>
+<body>
+	<div class="row top-bar">
+    		<img class="logo" src="{{ url_for('static', filename='img/logo-white.svg') }}">
+    		<div class=center>Hands On Python Class</div>
+	</div>
+	<br>
+	<br>
+    <div class="flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+           </ul>
+         {% endif %}
+        {% endwith %}
+    </div>
+
+	{% block content %}
+	{% endblock %}
+</body>
+</html>
