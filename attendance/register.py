@@ -4,13 +4,13 @@ from flask import (
     Blueprint, flash, g, 
     render_template, session, 
     request, url_for, redirect,
-    url_for
 )
 
 from sqlalchemy import extract
 
 from .models import Student, Attendance, Event
 from .utils import get_form_errors
+from .auth import login_required
 from .db import db_session
 
 from datetime import datetime
@@ -18,14 +18,6 @@ import functools
 
 bp = Blueprint('register', __name__)
 
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.student is None:
-            flash("First input you registration number for identification", "error")
-            return redirect(url_for('register.login'))
-        return view(**kwargs)
-    return wrapped_view
 
 def event_required(view):
     t = datetime.now()
@@ -40,44 +32,11 @@ def event_required(view):
         g.event = event
         if event is None:
             flash(f"No Class slated for {t.strftime('%a %d,  %b %Y')}", "error")
-            return redirect(url_for('register.profile'))
+            return redirect(url_for('auth.profile'))
         else:
             db_session.add(event)
         return view(**kwargs)
     return wrapped_view
-
-@bp.before_app_request
-def load_student():
-    student_id = session.get("student_id")
-    if student_id is None:
-        g.student = None
-    else:
-        g.student = db_session.get(Student, student_id)
-
-
-@bp.route('/login', methods=['GET', 'POST'])
-def login():
-    if g.student is not None:
-        flash("Logged in as {g.student.firstname}", "info")
-        return redirect(url_for('register.profile'))
-
-    if request.method == "POST":
-        reg_num = request.form['reg_num']
-        stud = Student.query.filter(Student.reg_num == reg_num).first()
-        if stud is None:
-            flash(f"You have to enroll first", "error")
-            return redirect(url_for('register.enroll'))
-        else:
-            session.clear()
-            session['student_id'] = stud.id
-            return redirect(url_for('register.profile'))
-            
-    return render_template("register/reg_number_form.html")
-
-@bp.route('/profile')
-@login_required
-def profile():
-    return render_template("register/profile.html")
 
 @bp.route('/enroll', methods=["POST", "GET"])
 def enroll():    
@@ -105,7 +64,7 @@ def enroll():
                 session.clear()
                 session['student_id'] = new_student.id
                 g.student = new_student
-                return redirect(url_for('register.profile'))
+                return redirect(url_for('auth.profile'))
     return render_template("register/enrollment_form.html")
     
 
@@ -124,6 +83,6 @@ def mark_attendance():
         db_session.add(attendance_obj)
         flash("Attendance taken", "success")
 
-    return redirect(url_for('register.profile'))
+    return redirect(url_for('auth.profile'))
 
 

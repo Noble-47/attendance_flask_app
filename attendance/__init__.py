@@ -29,10 +29,14 @@ def create_app(test_config=None):
         return "Hello, World!"
     
     from . import register
+    from . import admin
+    from . import auth
     from . import db
    
     db.init_app(app)
     app.register_blueprint(register.bp)
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(admin.bp)
 
     return app
 
