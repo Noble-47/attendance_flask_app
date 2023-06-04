@@ -52,3 +52,24 @@ def get_form_errors(form):
 
     return errors
 
+
+def student_to_dict(student, mask=None, **kwargs):
+    # converts student model to dict
+    # discard any keyword that starts with '_'
+    # discard any keyword in mask
+    # include keyword arguments in dictionary
+
+    res = {}
+    for k,v in student.__dict__.items():
+        if k.startswith('_'):
+            continue
+        if mask and k in mask:
+            continue
+        if k == "arrival_time":
+            # get only hour and minute of arrival time
+            res[k] = v.arrival_time.strftime("%H : %m")
+            continue
+        res[k] = v
+    res.update(kwargs)
+    return res
+

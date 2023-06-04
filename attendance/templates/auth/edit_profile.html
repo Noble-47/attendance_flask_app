@@ -1,0 +1,35 @@
+{%extends 'base.html' %}
+{% block content %}
+<div class="profile">
+    <h2>Student Profile</h2>
+    <form action="{{ url_for('auth.edit_profile') }}" method="POST">
+        <div class="form-group">
+            <label for="reg_num">Registration Number</label>
+            <input type="text" id="reg_num" name="reg_num" value="{{ g.student.reg_num }}">
+        </div>
+        <div class="form-group">
+            <label for="fullname">First Name</label>
+            <input type="text" id="firstname" name="firstname" value="{{ g.student.firstname}}">
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <input type="text" id="lastname" name="lastname" value="{{ g.student.lastname }}">
+        </div>
+        <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" name="department" value="{{ g.student.department }}">
+        </div>
+        <div class="form-group">
+            <label for="level">level</label>
+            <input type="int" id="level" name="level" value="{{ g.student.level }}">
+        </div>
+        <div class="form-group">
+            <label for="phone_number">Phone number</label>
+            <input type="text" id="phone_number" name="phone_number" value="{{ g.student.phone_number }}">
+        </div>
+        <div class="form-group">
+            <button type="submit">Save</button>
+        </div>
+   </form>
+</div>
+{% endblock %}

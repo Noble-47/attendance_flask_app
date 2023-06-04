@@ -1,0 +1,14 @@
+{% extends 'base.html'%}
+{% block content %}
+    <div class="dashboard">
+        <h1>Dashboard</h1>
+        <ul>
+            <li><a href="#">Student Report</a></li>
+            <li><a href="#">Class Report</a></li>
+            <li><a href="{{ url_for('admin.live_attendance') }}">Live Class Attendance</a></li>
+            <li><a href="#">Scheduled Classes</a></li>
+        </ul>
+    </div>
+{% endblock %}
+
+

@@ -18,11 +18,11 @@
         <label for="level">level</label>
         <input type="int" id="level" name="level" value="{{ g.student.level }}" readonly>
     </div>
-    {% if g.event %}
+   {% if g.event %}
         <div class="form-group">
         	<p>Click on the button to register for today's class</p>
             <button type="submit"><a href="{{ url_for('register.mark_attendance')}}">Mark attendance</a></button>
-	    </div>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

@@ -5,7 +5,7 @@
     <h2>Enrollment Form</h2>
     <div class="form-group">
         <label for="reg_num">Registration Number</label>
-        <input type="text" id="reg_num" name="reg_num" required>
+        <input type="text" id="reg_num" name="reg_num"  {% if reg_num %} value="{{ reg_num }}" {% endif %}required>
     </div>
     <div class="form-group">
         <label for="firstname">First Name</label>

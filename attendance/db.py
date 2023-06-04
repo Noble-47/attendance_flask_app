@@ -1,4 +1,5 @@
 from sqlalchemy.orm import scoped_session, sessionmaker
+from werkzeug.security import generate_password_hash
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import create_engine, exists
 from flask import current_app
@@ -15,6 +16,7 @@ db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind
 class Base(DeclarativeBase):
     query = db_session.query_property()
 
+
 def init_db():
     from . import models
     Base.metadata.create_all(bind=engine)
@@ -24,12 +26,13 @@ def init_db():
 def init_db_command():
     """Clear existing data and create new tables"""
     if os.path.exists(db_path):
-        print("This will delete all existing data at {os.path.basename(db_path}.")
+        print(f"This will delete all existing data at {os.path.basename(db_path)}.")
         option = input("Are you sure you want to proceed? [Y/N]: ")
         if option.lower() in ['n', 'no']:
             return
         elif option.lower() in ['y', 'yes']:
             click.echo("Initializing database...")
+            os.remove(db_path)
             init_db()
             click.echo("Initialized database")
         else:

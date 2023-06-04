@@ -3,4 +3,11 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATABASE = BASE_DIR / 'attendance.sqlite' 
+
+# database config
+DATABASE = BASE_DIR / 'attendance.sqlite'
+
+# REDIS config
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+REDIS_DB = 0

@@ -33,3 +33,5 @@ lib/
 include/
 bin/
 
+# redis server
+*.rdb

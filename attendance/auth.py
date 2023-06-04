@@ -3,8 +3,10 @@ from flask import (
     render_template, session, 
     request, url_for, redirect,
 )
+from sqlalchemy import update
 
 from .models import Student, Attendance, Event
+from .utils import get_form_errors
 from .db import db_session
 
 import functools
@@ -34,7 +36,7 @@ def load_student():
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if g.student is not None:
-        flash("Logged in as {g.student.firstname}", "info")
+        flash(f"Logged in as {g.student.firstname}", "info")
         return redirect(url_for('auth.profile'))
 
     if request.method == "POST":
@@ -42,7 +44,7 @@ def login():
         stud = Student.query.filter(Student.reg_num == reg_num).first()
         if stud is None:
             flash(f"You have to enroll first", "error")
-            return redirect(url_for('register.enroll'))
+            return redirect(url_for('register.enroll', reg_num=reg_num.replace('/', '_')))
         else:
             session.clear()
             session['student_id'] = stud.id
@@ -55,3 +57,33 @@ def login():
 def profile():
     return render_template("auth/profile.html")
 
+@bp.route('/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == "POST":
+        form = request.form
+        errors = get_form_errors(form)
+        if errors is not None:
+            reg_num = form.get('reg_num')
+            student = Student.query.filter(Student.reg_num == reg_num).first()
+            if student is not None:
+                update_stmt = (
+                    update(Student)
+                    .where(Student.reg_num == reg_num)
+                    .values(**form)        
+                )
+                db_session.execute(update_stmt)
+                db_session.commit()
+                return redirect(url_for('auth.profile')) 
+            else:   
+                error = f"No student with registration number {reg_num!r} was registered"
+        flash(error, 'error')
+        return redirect(url_for('auth.edit_profile'))
+    
+    return render_template('auth/edit_profile.html')
+
+@bp.route('/logout')
+def logout():
+    g.student = None
+    session.clear()
+    return redirect(url_for('auth.login'))

@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy import (
         String, DateTime, Integer,
         Column, ForeignKey, Table,
+        Boolean, Text
 )
 
 from sqlalchemy.orm import DeclarativeBase
@@ -13,6 +14,7 @@ from sqlalchemy.orm import Mapped
 
 from datetime import datetime
 from typing import List
+import json
 import re
 
 from .db import Base
@@ -26,7 +28,10 @@ class Attendance(Base):
     arrival_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     student: Mapped[Student] = relationship(back_populates="events")
     event: Mapped[Event] = relationship(back_populates="attendance")
-
+    
+    def __init__(self, event, student):
+        self.event = event
+        self.student = student
 
 class Student(Base):
 
@@ -72,6 +77,24 @@ class Student(Base):
         if re.match(pattern, reg_no) is not None:
             return reg_no
         raise ValueError(f"{reg_no} is not a valid registration number")
+    
+    def to_json(self, mask=['id'], **extra_kw):
+        """
+        Returns a json representation of Student
+        
+        extra_kw are updated to json representation
+
+        mask identifies attribute of students not to add to json represenation
+        """
+        attrs = ['id', 'reg_num', 'firstname', 'lastname', 'level', 'department', 'phone_number']
+        student = {}
+        for attr in attrs:
+            if attr not in mask:
+                student[attr] = self.__dict__.get(attr)
+
+        student.update(extra_kw)
+        return json.dumps(student)
+        
 
     def __repr__(self):
         return f"<Student {self.lastname!r}  {self.firstname!r}, {self.reg_num!r} >"
@@ -83,9 +106,31 @@ class Event(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     date: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     attendance: Mapped[List[Attendance]] = relationship(back_populates="event") 
+    created_by: Mapped[int] = mapped_column(ForeignKey("admin.id"))
+    admin: Mapped[Admin] = relationship(back_populates="events")
     
     def __init__(self, date):
         self.date = date
 
     def __repr__(self):
         return f"<Hands On Python Training Class -- {self.date.strftime('%a %b %d, %Y')}> "
+
+class Admin(Base):
+
+    __tablename__ = "admin"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(11), unique=True)
+    firstname: Mapped[str] = mapped_column(String(11), nullable=False)
+    lastname: Mapped[str] = mapped_column(String(11), nullable=False)
+    password: Mapped[str] = mapped_column(Text, nullable=False)
+    events: Mapped[List[Event]] = relationship(back_populates="admin")
+
+    def __init__(self, firstname, lastname, username, password):
+        self.firstname = firstname
+        self.lastname = lastname    
+        self.username = username
+        self.password = password
+
+    def __repr__(self):
+        return f"<Admin {self.username!r}>"
