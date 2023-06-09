@@ -1,6 +1,8 @@
-from flask import Flask
+from sqlalchemy import extract
+from flask import Flask, g
 from redis import Redis
 
+from datetime import datetime
 import os
 
 from . import settings 
@@ -49,6 +51,36 @@ def create_app(test_config=None):
     app.register_blueprint(register.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp)
+    
+    from .models import Event
+    from .db import db_session
+
+    # setup current event if any
+    @app.before_request
+    def setup_event():
+        # check if event exists
+        # check if event is today
+        t = datetime.now()
+        if g.get('event') is not None:
+            # if current event is of previous day
+            # close current event
+            if g.event.date.month < t.month or g.event.day != t.day:
+                g.event.close()
+                db_session.add(g.event)
+                db_session.commit()
+
+        # if no event
+        # or event is closed
+        # check if any event for today exists that is not closed
+        if g.get('event') is None or g.event.closed == True:    
+            event = Event.query.filter(
+                    extract('day', Event.date) == t.day,
+                    extract('month', Event.date) == t.month,
+                    extract('year', Event.date) == t.year,
+                    Event.closed == False
+                ).first()
+            g.event = event  # returns None or Event object
+
 
     return app
 

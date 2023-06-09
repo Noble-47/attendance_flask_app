@@ -36,6 +36,7 @@
 
             {% if g.student %}
                 <a href="{{ url_for('auth.edit_profile') }}">Edit Details</a>
+                <a href="#">View Attendance Record</a>
                 <a href="{{ url_for('auth.logout') }}">Logout</a>
             {% else %}
                 <a href="{{ url_for('register.enroll') }}">Enroll as student</a>

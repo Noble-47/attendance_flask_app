@@ -108,12 +108,20 @@ class Event(Base):
     attendance: Mapped[List[Attendance]] = relationship(back_populates="event") 
     created_by: Mapped[int] = mapped_column(ForeignKey("admin.id"))
     admin: Mapped[Admin] = relationship(back_populates="events")
-    
+    closed : Mapped[bool] = mapped_column(Boolean, default=False)
+
     def __init__(self, date):
         self.date = date
 
     def __repr__(self):
         return f"<Hands On Python Training Class -- {self.date.strftime('%a %b %d, %Y')}> "
+    
+    @property
+    def is_closed(self):
+        return self.closed
+    
+    def close(self):
+        self.closed = True
 
 class Admin(Base):
 

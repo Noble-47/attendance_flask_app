@@ -22,20 +22,6 @@ import functools
 
 
 bp = Blueprint('register', __name__)
-
-
-@bp.before_app_request
-def check_event():
-    # check if event exists
-    # check if event is today
-    t = datetime.now()
-    if g.get('event') is None :    
-        event = Event.query.filter(
-                extract('day', Event.date) == t.day,
-                extract('month', Event.date) == t.month,
-                extract('year', Event.date) == t.year
-            ).first()
-        g.event = event
        
 def event_required(view):
     @functools.wraps(view)
@@ -91,9 +77,14 @@ def enroll(reg_num=None):
 @event_required
 def mark_attendance():
     # check if event is closed
-    # if g.event.is_closed:
-    #    flash("Class has been closed for attendance", "error")
+    if g.event.is_closed:
+        flash("Class has been closed for attendance", "error")
         
+        # clean up seen list on redis
+        current_app.redis.unlink('seen')
+
+        return redirect(request.referrer)
+
     # check if student is already in event's attendance
     attendance_obj = Attendance.query.filter(
             Attendance.student==g.student, 
@@ -117,21 +108,21 @@ def mark_attendance():
 
         
         ## TODO: add a flag to student showing student is registered
-        
+        session['is_registered'] = True
+
         # get attendance json representation as record
         # publish record to attendance update channel
         # for live update of connected clients
-        # store record in unseen redis queue
-    
-    arrival_time = attendance_obj.arrival_time # delete after
-    record = attendance_obj.student.to_json(mask=['id', 'level', 'phone_number'], arrival_time=arrival_time.strftime('%H : %M'))
+       
+        arrival_time = attendance_obj.arrival_time # delete after
+        record = attendance_obj.student.to_json(mask=['id', 'level', 'phone_number'], arrival_time=arrival_time.strftime('%H : %M'))
         
-    current_app.redis.publish("attendance-update", message=record)
-    #current_app.redis.lpush("seen", record)
+        current_app.redis.publish("attendance-update", message=record)
+        current_app.redis.lpush("seen", record)
         
 
-    flash("Attendance taken", "success")
+        flash("Attendance taken", "success")
 
-    return redirect(url_for('auth.profile'))
+        return redirect(url_for('auth.profile'))
 
         

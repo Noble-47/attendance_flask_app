@@ -81,7 +81,7 @@ def dashboard():
     return render_template('admin/board.html')
 
 @bp.route('/live-attendance-update')
-#@is_admin
+@is_admin
 @event_required
 def get_live_attendance_update():
     # TODO : use redis instead of deque
@@ -196,7 +196,9 @@ def schedule_class():
             db_session.add(new_event)
             db_session.commit()
             flash(f"Added new class {new_event!r} to class schedules", "info")
-
+            
+            # make new event current event 
+            g.event = new_event
         # redirect to scheduled class list
         return redirect(url_for('admin.dashboard'))
     else:
