@@ -47,6 +47,10 @@ def create_admin():
     firstname, lastname, username, password = get_user_prompt()
 
     password = generate_password_hash(password)
+    if Admin.query.filter(Admin.username == username).first() is not None:
+        print("Admin with that username exists")
+        create_admin()
+        return 
     new_admin = Admin(firstname=firstname, lastname=lastname, username=username, password=password)
     db_session.add(new_admin)
     db_session.commit()

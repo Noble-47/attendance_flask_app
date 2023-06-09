@@ -1,4 +1,5 @@
 # form validation
+import json
 import re
 
 
@@ -73,3 +74,21 @@ def student_to_dict(student, mask=None, **kwargs):
     res.update(kwargs)
     return res
 
+
+def json_serialize(_dict):
+    """
+    Serialize this object to a string, according to the `server-sent events
+    specification <https://www.w3.org/TR/eventsource/>`_.
+    """
+    if isinstance(_dict['data'], str):
+        data = _dict['data']
+    else:
+        data = json.dumps(_dict['data'])
+    lines = ["data:{value}".format(value=line) for line in data.splitlines()]
+
+    if _dict['event']:
+        lines.insert(0, "event:{value}".format(value=_dict['event']))
+
+    if _dict["retry"]:
+        lines.append("retry:{value}".format(value=_dict['retry']))
+    return "\n".join(lines) + "\n\n"

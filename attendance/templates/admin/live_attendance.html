@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
-{% block content %}
-<button id="update-btn">Update</button>    
+{% block content %}    
 <div class="table-layer">
   <div class="attendance-table">
     <div class="table-row table-header">
@@ -22,19 +21,17 @@
 </div>
 
 <script>
-  // Function to fetch new data and update the table
-  function updateTable() {
-    console.log("Sending request")
-    fetch("http://127.0.0.1:5000/admin/live-attendance-update")
-      .then(response => {console.log('here'); return response.json()})
-      .then(data => {
-        var tbody = document.querySelector('.attendance-table');
-        //var tbody = table;
-          console.log("Response gotten")
-          data.forEach(student => {
+    function updateTable(event){
+             
+         var student = JSON.parse(event.data);
+        
+         // Show alert with event message
+             
+         var tbody = document.querySelector('.attendance-table');
+        
           var newRow = document.createElement('div');
           newRow.classList.add('table-row');
-          
+
           var regNumberCell = document.createElement('div');
           regNumberCell.classList.add('table-cell');
           regNumberCell.textContent = student.reg_num;
@@ -57,33 +54,33 @@
           newRow.appendChild(arrivalTimeCell);
 
           tbody.appendChild(newRow);
-        });
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-  }
+        } 
 
-  // Call the updateTable function initially
-  //updateTable();
 
-  // Refresh the table every 5 seconds
-  //setInterval(updateTable, 10000);
-    btn = document.getElementById('update-btn');
-    btn.addEventListener('click', updateTable);
+   const eventSource = new EventSource("{{ url_for('admin.get_live_attendance_update') }}");
 
-    var source = new EventSource("/admin/live-attendance-update")
-    source.addEventListener('onmessage', function(e){console.log(e);}, false)
-    source.addEventListener('open', function(e){console.log('connection open'), false})
-    source.addEventListener(
-        'error', 
-        function(e){
-            if (e.readyState == EventSource.CLOSED){
-                console.log('Connection CLOSED')
-            }        
-        },
-        false
-    )
+
+    eventSource.addEventListener("open", (event) => { 
+        console.log("Opened connection"); 
+    });
+
+    eventSource.addEventListener('close', function(event) {
+        console.log('Connection closed');
+    });
+
+
+    eventSource.addEventListener("error", function(event) {
+        console.log("Error occured");
+        console.error('Error:', event);
+     });
+    
+    eventSource.addEventListener("new_attendance", function(event){
+        console.log("Message recieved");
+        updateTable(event);
+    })
+
 </script>
 
 {% endblock %}
+
+

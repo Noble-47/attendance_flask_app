@@ -2,14 +2,17 @@ from flask import (
     Blueprint, flash, g, 
     render_template, session, 
     request, url_for, redirect,
-    jsonify, Response, current_app
+    jsonify, Response, current_app,
+    stream_with_context
 )
+
 from werkzeug.security import check_password_hash
 from sqlalchemy import extract
 
 from .models import Student, Attendance, Event, Admin
 from .register import event_required
 from .db import db_session
+from .utils import json_serialize
 
 from collections import deque
 import functools
@@ -83,32 +86,47 @@ def dashboard():
 def get_live_attendance_update():
     # TODO : use redis instead of deque
     # TODO : implement a way of closing communication if event is closed for attendance
-    redis = current_app.redis
+
+    # add user to attendance-update channel
+    pubsub = current_app.redis.pubsub()
+    pubsub.subscribe('attendance-update')
     timeout = 0  # forever keep redis connection open
+    retry = 5 # retry to open connection after 5 secs
+
+    @stream_with_context
     def attendance_stream():
         # infinite loop for stream
         while True:
-            # fetch attendance record from unseen redis server
-            # move record to seen
-            # Block until a new attendance is added to unseen
-            item = redis.blmove('unseen', 'seen', timeout)
+            # listen for messages published on attendance-update channel
+            for pubsub_message in pubsub.listen():
+                # disregard subscribed and unsubscribed messages
+                message = {}
+                if pubsub_message['type'] == 'message':
+                    item = pubsub_message['data']
              
-            # ensure it is in JSON format
-            json_item = json.loads(item)
-            
-            # send stream data
-            yield f"data : {json_item}\n\n"
-            
+                    # get data dictionary
+                    data = json.loads(item)
+                    
+                    message['event'] = 'new_attendance'
+                    message['retry'] = retry
+                    message['data'] = data
 
+                    # make message a valid JSON data
+                    message = json_serialize(message)
+                    
+                    # send stream data
+                    yield message
+    
     # create a response with event stream content type
     response = Response(attendance_stream(), mimetype='text/event-stream')
 
     # Set additional headers to enable server sent events
     response.headers['Cache-control'] = 'no-cache'
     response.headers['Connection'] = 'keep-alive'
-    response.headers['Content-Encoding'] = 'text/event-stream'
+    #response.headers['Content-Encoding'] = 'text/event-stream'
     response.headers['X-Accel-Bufferring'] = 'no'
 
+    #return response
     return response
 
 @bp.route('/live-attendance')
@@ -136,7 +154,7 @@ def start_class():
         db_session.commit()
         g.event = new_event
 
-        flash(f"{new_event} Opened for attendance")
+        flash(f"{new_event} Opened for attendance", "success")
     else:
         flash("There is already a class scheduled for today", "error")
         return redirect(url_for('admin.dashboard'))

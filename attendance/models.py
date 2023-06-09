@@ -80,7 +80,7 @@ class Student(Base):
     
     def to_json(self, mask=['id'], **extra_kw):
         """
-        Returns a json representation of Student
+        Returns a dict representation of Student
         
         extra_kw are updated to json representation
 

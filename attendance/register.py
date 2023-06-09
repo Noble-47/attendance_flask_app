@@ -95,13 +95,15 @@ def mark_attendance():
     #    flash("Class has been closed for attendance", "error")
         
     # check if student is already in event's attendance
-    if Attendance.query.filter(
+    attendance_obj = Attendance.query.filter(
             Attendance.student==g.student, 
             Attendance.event==g.event
-    ).first() is not None:
-        flash("Attendance already taken", "info")
+    ).first() 
 
-    else:
+    if attendance_obj is not None:
+        flash("Attendance already taken", "info")
+        
+    if attendance_obj is None:
         # add student to event attendance via secondary attendance table
         attendance_obj = Attendance(event=g.event, student=g.student)
         attendance_obj.student = g.student
@@ -113,12 +115,22 @@ def mark_attendance():
         db_session.add(attendance_obj)
         db_session.commit()
 
-        # add to unseen redis queue
-        #TODO: add a flag to student showing student is registered
-        current_app.redis.lpush("unseen", attendance_obj.student.to_json(mask=['id', 'level', 'phone_number'], arrival_time=arrival_time.strftime('%H : %M')))
+        
+        ## TODO: add a flag to student showing student is registered
+        
+        # get attendance json representation as record
+        # publish record to attendance update channel
+        # for live update of connected clients
+        # store record in unseen redis queue
+    
+    arrival_time = attendance_obj.arrival_time # delete after
+    record = attendance_obj.student.to_json(mask=['id', 'level', 'phone_number'], arrival_time=arrival_time.strftime('%H : %M'))
+        
+    current_app.redis.publish("attendance-update", message=record)
+    #current_app.redis.lpush("seen", record)
         
 
-        flash("Attendance taken", "success")
+    flash("Attendance taken", "success")
 
     return redirect(url_for('auth.profile'))
 
