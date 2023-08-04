@@ -1,5 +1,5 @@
+from flask import Flask, g, redirect, render_template
 from sqlalchemy import extract
-from flask import Flask, g
 from redis import Redis
 
 from datetime import datetime
@@ -34,6 +34,7 @@ def create_app(test_config=None):
     )
     app.redis.set('app-init', 'hello world')
     @app.route('/hello')
+    
     def hello():
         return "Hello, World!"
     
@@ -81,6 +82,13 @@ def create_app(test_config=None):
                 ).first()
             g.event = event  # returns None or Event object
 
+    @app.route('/')
+    def home():
+        if g.student:
+            return redirect('auth.profile')
+        if g.admin:
+            return redirect('admin.dashboard')
+        return render_template("home.html")
 
     return app
 
