@@ -31,4 +31,4 @@ The project is built using the following technologies:
 
 The combination of these tools allows attendance_flask_app to deliver a seamless user experience with real-time updates and secure authentication.
 
-Please note that this project is for practice purposes and is not intended for production use. The implementation of server-side events and real-time features can serve as a valuable learning experience for Flask developers.
+Please note that this project is for practice purposes and is not intended for production use.
